@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roo_skill id="assess_and_escalate_semantics" version="1.0" xmlns:roo="http://schema.roo.dev/skill">
+    <skill_metadata>
+        <name>Semantic Density Escalator</name>
+        <description>Evaluates raw workspace context for structural entropy. If entropy is high, escalates the active agent into Semantic Architect Mode to normalize the data.</description>
+    </skill_metadata>
+
+    <execution_workflow>
+        <step id="1" action="analyze_context">
+            <instruction>Scan the provided text, codebase, or document for existing semantic boundaries (XML tags, JSON structures, explicit architectural headers).</instruction>
+        </step>
+        
+        <step id="2" action="calculate_entropy">
+            <logic>
+                If (raw_text_ratio &gt; 80%) AND (technical_density == HIGH):
+                    set state = "Unstructured";
+                Else:
+                    set state = "Structured";
+            </logic>
+        </step>
+
+        <step id="3" action="conditional_escalation">
+            <condition state="Unstructured">
+                <trigger_mode>semantic_architect</trigger_mode>
+                <system_message>Context entropy too high for standard RAG ingestion. Escalating to Semantic Architect Mode to synthesize Universal Agent Schema XML.</system_message>
+            </condition>
+            <condition state="Structured">
+                <trigger_mode>standard_agent</trigger_mode>
+                <system_message>Context is sufficiently structured. Proceed with standard analysis.</system_message>
+            </condition>
+        </step>
+    </execution_workflow>
+
+    <algorithmic_weighting_engine>
+        <!-- The algorithm the agent uses to assign weights when in the escalated mode -->
+        <variable name="BaseWeight" value="0.5"/>
+        <modifier condition="Contains core thesis or system architecture" value="+0.3"/>
+        <modifier condition="Contains actionable security/deployment directives" value="+0.2"/>
+        <modifier condition="Contains purely historical context" value="-0.2"/>
+        <modifier condition="Contains abstract theory without implementation" value="-0.1"/>
+        <constraint type="range" min="0.0" max="1.0"/>
+    </algorithmic_weighting_engine>
+</roo_skill>

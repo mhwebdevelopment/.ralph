@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<skill name="orchestrate-task" mode="orchestrator">
+
+  <meta>
+    <description>
+      Decompose a new feature, fix, or refactor into scoped agent units.
+      Reads docs/, writes docs/current_task.xml, produces a dispatch plan
+      with agent assignments and dependency order.
+    </description>
+    <trigger_phrases>
+      start task, new feature, plan this, break this down,
+      create task for, what do we need to do, decompose this
+    </trigger_phrases>
+  </meta>
+
+  <steps>
+
+    <step n="1" name="read_state">
+      Read in order: docs/Purpose.xml, docs/context.xml, docs/current_task.xml.
+      If docs/current_task.xml has status="in_progress" or "in_review":
+        output BLOCKED: "Close TASK-[ID] before starting a new one."
+        stop.
+    </step>
+
+    <step n="2" name="decompose">
+      Break request into units. Each unit must satisfy all four:
+      <condition>One agent role: implementer-backend | implementer-frontend | reviewer</condition>
+      <condition>One outcome, one layer: UI | API | DB | config</condition>
+      <condition>Zero file-scope overlap with any sibling unit</condition>
+      <condition>Explicit dependency on prior unit IDs listed</condition>
+    </step>
+
+    <step n="3" name="write_task">
+      Write docs/current_task.xml with these fields:
+      <field>Task ID, Goal, Background</field>
+      <field>files_in_scope — explicit list, no wildcards</field>
+      <field>files_out_of_scope — explicit list</field>
+      <field>acceptance_criteria — each independently verifiable</field>
+      <field>known_facts — from docs/context.xml only, no inference</field>
+      <field>unknowns — agent must output BLOCKED if any remain unresolved</field>
+      <field>implementation_plan — numbered steps</field>
+      <field>test_plan</field>
+    </step>
+
+    <step n="4" name="dispatch_plan">
+      Output unit sequence:
+        Unit N | agent-role | files: [...] | depends: [unit IDs or "none"]
+      Final unit is always: reviewer | diff + docs/current_task.xml acceptance criteria.
+    </step>
+
+    <step n="5" name="escalation_check">
+      Before finalizing, verify none of these are present:
+      <block_condition>Required fact absent from docs/context.xml — update context.xml first.</block_condition>
+      <block_condition>Schema or API contract change needed — escalate to engineer.</block_condition>
+      <block_condition>New dependency needed — security check before task proceeds.</block_condition>
+      <block_condition>Auth, session, or validation boundary change — escalate to engineer.</block_condition>
+      If any match — output BLOCKED with the specific condition.
+    </step>
+
+  </steps>
+
+  <output_format>
+    TASK-[ID]: [goal]
+    Status: READY | BLOCKED ([reason])
+
+    Units:
+      1. [role] | files: [...] | depends: none
+      2. [role] | files: [...] | depends: unit-1
+      N. reviewer | diff + docs/current_task.xml | depends: unit-N-1
+
+    Dispatch contract prepended to each agent:
+      "Read docs/Purpose.xml, docs/context.xml, docs/current_task.xml.
+       Restate goal, scope, and criteria. List files to modify.
+       If anything is missing — stop and ask."
+  </output_format>
+
+  <escalation>
+    <path trigger="blocked_condition" mode="orchestrator">Stay in orchestrator. Resolve blocker, replan.</path>
+    <path trigger="plan_approved" mode="implementer-backend">Dispatch for server-side units.</path>
+    <path trigger="plan_approved" mode="implementer-frontend">Dispatch for UI units.</path>
+    <path trigger="implementation_done" mode="reviewer">Dispatch with diff and acceptance criteria.</path>
+    <path trigger="approved" mode="orchestrator">Record to docs/task-history.xml. Reset docs/current_task.xml.</path>
+  </escalation>
+
+</skill>

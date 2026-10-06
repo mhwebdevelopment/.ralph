@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roo_skill id="semantic_escalation" version="2.0" xmlns:roo="http://schema.roo.dev/skill">
+    <skill_metadata>
+        <name>Semantic Density Escalator</name>
+        <description>Evaluates raw workspace context for structural entropy and normalizes data.</description>
+        <purpose>To ensure all ingested text and context meets minimum machine-readable structural requirements (UAS) before complex processing, preventing context loss and hallucination.</purpose>
+    </skill_metadata>
+
+    <when_to_use>
+        <trigger>You are provided with a massive, unformatted text dump or legacy documentation.</trigger>
+        <trigger>The context window is filled with unstructured, highly technical information lacking semantic tags.</trigger>
+        <trigger>You are struggling to parse the hierarchy or relationships within a users codebase or documentation.</trigger>
+    </when_to_use>
+
+    <custom_instructions>
+        <instruction>Always scan the provided text or document for existing semantic boundaries (XML tags, JSON structures, explicit architectural headers) before acting.</instruction>
+        <instruction>Do not attempt to summarize or answer complex questions if the structural entropy is too high; normalize the data first.</instruction>
+        <instruction>When normalizing data, strictly apply the `Universal_Agent_Schema`.</instruction>
+    </custom_instructions>
+
+    <execution_workflow>
+        <step id="1" action="analyze_context">
+            <instruction>Measure the ratio of raw, untagged text versus structured data formats.</instruction>
+        </step>
+        <step id="2" action="calculate_entropy">
+            <logic>
+                If (raw_text_ratio > 80%) AND (technical_density == HIGH):
+                    set state = "Unstructured";
+                Else:
+                    set state = "Structured";
+            </logic>
+        </step>
+        <step id="3" action="conditional_routing">
+            <logic>
+                If state == "Structured": Proceed with standard agent analysis.
+                If state == "Unstructured": Trigger escalation protocol.
+            </logic>
+        </step>
+    </execution_workflow>
+
+    <custom_engines>
+        <algorithmic_weighting_engine>
+            <variable name="BaseWeight" value="0.5"/>
+            <modifier condition="Contains core thesis or system architecture" value="+0.3"/>
+            <modifier condition="Contains actionable security/deployment directives" value="+0.2"/>
+            <modifier condition="Contains purely historical context" value="-0.2"/>
+            <modifier condition="Contains abstract theory without implementation" value="-0.1"/>
+            <constraint type="range" min="0.0" max="1.0"/>
+        </algorithmic_weighting_engine>
+    </custom_engines>
+
+    <escalation_protocol>
+        <rule>
+            <condition>State is evaluated as "Unstructured" requiring heavy architectural normalization.</condition>
+            <target_mode id="semantic_architect" path=".roo/modes/semantic_architect.xml"/>
+            <system_message>Context entropy is too high for standard RAG ingestion. Escalating to Semantic Architect Mode to synthesize Universal Agent Schema XML.</system_message>
+        </rule>
+    </escalation_protocol>
+</roo_skill>

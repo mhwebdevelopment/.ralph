@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<skill name="review-diff" mode="reviewer">
+
+  <meta>
+    <description>
+      Review a code diff against docs/current_task.xml acceptance criteria,
+      docs/context.xml, and docs/Purpose.xml.
+      Outputs APPROVED or BLOCKED with severity-tagged issues.
+    </description>
+    <trigger_phrases>
+      review this, check the diff, validate the changes,
+      is this ready to merge, review the PR, check for issues, approve this
+    </trigger_phrases>
+  </meta>
+
+  <steps>
+
+    <step n="1" name="read_state">
+      Read:
+        docs/current_task.xml — acceptance criteria, scope list, known facts
+        docs/context.xml — API contracts, schema, env vars
+        docs/Purpose.xml — architectural invariants
+        The diff — from engineer or git diff output
+    </step>
+
+    <step n="2" name="scope_check">
+      List every file in the diff.
+      Cross-reference against docs/current_task.xml files_in_scope.
+      Any file in diff NOT in scope — BLOCK: scope_violation [file].
+    </step>
+
+    <step n="3" name="invention_check">
+      Scan diff for:
+        - Endpoints not in docs/context.xml api_contracts
+        - Env vars not in docs/context.xml environment_variables
+        - DB columns or tables not in docs/context.xml database_schema
+        - Types not in src/lib/types or docs/context.xml
+      Any match — BLOCK: invented_behavior [item].
+    </step>
+
+    <step n="4" name="criteria_check">
+      For each acceptance criterion in docs/current_task.xml:
+        Mark: SATISFIED | PARTIAL | MISSING
+        Cite the specific diff hunk, or note its absence.
+    </step>
+
+    <step n="5" name="correctness_check">
+      <check result="BLOCK">Empty catch blocks.</check>
+      <check result="BLOCK">Unhandled promise rejections.</check>
+      <check result="BLOCK">Hardcoded secrets or credentials.</check>
+      <check result="BLOCK">Silent failure paths with no typed response.</check>
+      <check result="WARN">Missing tests for changed logic.</check>
+      <check result="WARN">console.log in production paths.</check>
+    </step>
+
+    <step n="6" name="docs_check">
+      <check result="WARN">New endpoint — docs/context.xml api_contracts needs update.</check>
+      <check result="WARN">New env var — docs/context.xml environment_variables needs update.</check>
+      <check result="WARN">Schema change — docs/context.xml database_schema needs update.</check>
+      <check result="WARN">New fragile area — docs/context.xml fragile_areas needs update.</check>
+    </step>
+
+    <step n="7" name="verdict">
+      Output this exact structure:
+
+        VERDICT: APPROVED | BLOCKED
+
+        Issues:
+          [BLOCK|WARN|NOTE] file:line — description
+
+        Acceptance criteria:
+          [SATISFIED|PARTIAL|MISSING] criterion — hunk ref or "not found"
+
+        Docs drift:
+          docs/context.xml field needing update, or "none"
+
+        If BLOCKED: list exact changes required before re-review.
+    </step>
+
+  </steps>
+
+  <severity>
+    <level name="BLOCK">Correctness bug, security risk, scope violation, invented behavior, missing critical error handling. Must resolve before merge.</level>
+    <level name="WARN">Missing test, docs drift, weak error handling. Should resolve.</level>
+    <level name="NOTE">Style, naming, minor readability. Never blocking.</level>
+  </severity>
+
+  <never>
+    <item>Rewrite or refactor implementation code.</item>
+    <item>Approve a diff with invented APIs, env vars, or schema.</item>
+    <item>Approve a diff with undeclared out-of-scope file changes.</item>
+    <item>Treat NOTE-level issues as blocking.</item>
+  </never>
+
+  <escalation>
+    <path trigger="blocked" mode="orchestrator">
+      Switch to orchestrator. Surface all BLOCK issues with file:line references.
+      Orchestrator updates docs/current_task.xml and re-dispatches the implementer.
+    </path>
+    <path trigger="docs_drift" mode="orchestrator">
+      Orchestrator updates docs/context.xml with stale fields before merge proceeds.
+    </path>
+    <path trigger="approved" mode="orchestrator">
+      Orchestrator appends to docs/task-history.xml and resets docs/current_task.xml.
+    </path>
+  </escalation>
+
+</skill>

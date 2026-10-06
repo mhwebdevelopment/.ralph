@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<global_rules>
+  <!--
+    Injected into every mode system prompt.
+    Non-negotiable across all agents.
+    Source of truth for repo facts is always docs/context.xml and docs/Purpose.xml.
+  -->
+
+  <scope>
+    <rule>Modify only files explicitly listed in docs/current_task.xml files_in_scope.</rule>
+    <rule>No cross-layer edits without a new task boundary written in docs/current_task.xml.</rule>
+    <rule>No simultaneous overlapping file scope across two agents.</rule>
+  </scope>
+
+  <invention>
+    <!-- Primary cause of hallucinated bugs in AI-assisted coding -->
+    <rule>No invented API endpoints, env vars, DB columns, type shapes, or file paths.</rule>
+    <rule>No mock, stub, or placeholder code unless labeled: // MOCK — remove before merge</rule>
+    <rule>If a required fact is absent from docs/context.xml — stop and ask. Do not infer.</rule>
+  </invention>
+
+  <dependencies>
+    <rule>No new packages without Orchestrator approval.</rule>
+    <rule>Before adding any package: verify maintained (last commit under 6 months), no known CVEs, not a duplicate of an existing dep.</rule>
+    <rule>Pin exact versions on security-sensitive packages. No floating ^ or ~.</rule>
+    <rule>No deprecated packages.</rule>
+  </dependencies>
+
+  <code_quality>
+    <rule>No `any` type without inline justification comment on the same line.</rule>
+    <rule>No `TODO` or `FIXME` in delivered code — open a new task instead.</rule>
+    <rule>No commented-out code blocks in the final diff.</rule>
+    <rule>No `console.log` in production code paths.</rule>
+    <rule>No empty catch blocks — every error path returns a typed response.</rule>
+    <rule>No unhandled promise rejections.</rule>
+    <rule>No hardcoded secrets, tokens, or credentials anywhere.</rule>
+    <rule>No unauthenticated routes without explicit Orchestrator sign-off in docs/current_task.xml.</rule>
+    <rule>No deleted or skipped tests to make a build pass.</rule>
+  </code_quality>
+
+  <security>
+    <rule>Validate all user input server-side before DB writes.</rule>
+    <rule>Parameterized queries only — no SQL string interpolation.</rule>
+    <rule>Auth tokens are never logged.</rule>
+    <rule>CORS configured explicitly — no wildcard *.</rule>
+    <rule>No sensitive data in frontend state or localStorage without encryption.</rule>
+  </security>
+
+  <close_every_turn>
+    <!-- Every agent ends its reply with this block. No exceptions. -->
+    <report field="files_changed"/>
+    <report field="tests_run">command + actual output, not a summary</report>
+    <report field="remaining_unknowns"/>
+    <report field="docs_drift">stale docs/context.xml fields, or "none"</report>
+  </close_every_turn>
+
+</global_rules>

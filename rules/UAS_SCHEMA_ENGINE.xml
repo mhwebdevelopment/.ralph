@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uas_schema_engine id="universal_agentic_semantics_schema_engine" version="2.0" xmlns:uas="http://schema.universal-agentic-semantics.dev/engine">
+  <engine_metadata>
+    <name>Universal Agentic Semantics Schema Engine</name>
+    <description>Normative contract, taxonomy registry, migration profile, weighting model, and validation engine for UAS documents.</description>
+    <design_principle>Strict core, expressive perimeter.</design_principle>
+  </engine_metadata>
+
+  <root_document_contract>
+    <root_element name="UAS_Document"/>
+    <required_attributes>
+      <attribute name="schema_version" type="string" required="true"/>
+      <attribute name="compiled_by" type="string" required="true"/>
+      <attribute name="source_type" type="enum" values="raw_text document transcript code_notes research_report mixed legacy_xml unknown" required="false"/>
+      <attribute name="preservation_mode" type="enum" values="VERBATIM_FULL SEMANTIC_LOSSLESS SEMANTIC_COMPRESSED SUMMARY_MAP" required="true"/>
+      <attribute name="timestamp" type="datetime" required="false"/>
+    </required_attributes>
+    <required_children order="strict">
+      <child name="document_metadata"/>
+      <child name="source_inventory"/>
+      <child name="concept_registry"/>
+      <child name="cognitive_map"/>
+      <child name="semantic_body"/>
+      <child name="ambiguity_register"/>
+      <child name="validation_report"/>
+    </required_children>
+    <conditional_children>
+      <child name="preservation_audit" condition="preservation_mode != VERBATIM_FULL"/>
+      <child name="migration_report" condition="legacy_migration_used = true"/>
+    </conditional_children>
+  </root_document_contract>
+
+  <preservation_modes>
+    <mode id="VERBATIM_FULL">Preserve all source semantic units and wording where technically possible.</mode>
+    <mode id="SEMANTIC_LOSSLESS">Normalize structure and markup while preserving all claims and formulas.</mode>
+    <mode id="SEMANTIC_COMPRESSED">Merge repetitive or rhetorical material while preserving all high-weight semantic content and emitting preservation_audit.</mode>
+    <mode id="SUMMARY_MAP">Emit a high-level graph and summary units only; must state coverage limitations.</mode>
+  </preservation_modes>
+
+  <semantic_unit_contracts>
+    <semantic_unit required="true">
+      <required_attribute name="id"/>
+      <required_attribute name="surface_form" values="sentence heading formula list_item table_row code_block citation transcript_turn fragment paragraph"/>
+      <required_attribute name="base_role"/>
+      <optional_attribute name="specialized_role"/>
+      <required_attribute name="source_order"/>
+      <required_attribute name="preservation" values="verbatim normalized compressed inferred"/>
+      <optional_attribute name="concept_ref"/>
+      <optional_attribute name="concept"/>
+      <optional_attribute name="source_span"/>
+      <optional_attribute name="cognitive_weight"/>
+      <optional_attribute name="confidence" values="LOW MEDIUM HIGH"/>
+      <optional_attribute name="ambiguity_ref"/>
+      <optional_attribute name="evidence_ref"/>
+    </semantic_unit>
+    <section required="true">
+      <required_attribute name="id"/>
+      <required_attribute name="cognitive_weight"/>
+      <optional_attribute name="section_type"/>
+      <optional_attribute name="narrative_register" values="expository argumentative prescriptive exploratory comparative mixed"/>
+      <optional_attribute name="source_excerpt"/>
+      <required_child name="title"/>
+    </section>
+    <formal_definition>
+      <required_attribute name="id"/>
+      <required_attribute name="cognitive_weight"/>
+      <allowed_child name="formula"/>
+      <allowed_child name="parameter"/>
+      <allowed_child name="variable"/>
+      <allowed_child name="semantic_unit"/>
+    </formal_definition>
+    <semantic_table>
+      <required_attribute name="id"/>
+      <required_attribute name="semantic_type"/>
+      <required_child name="header"/>
+      <required_child name="row"/>
+      <row_contract required_attribute="id"/>
+    </semantic_table>
+    <semantic_list>
+      <required_attribute name="id"/>
+      <required_attribute name="semantic_type"/>
+      <item_contract required_attribute="id"/>
+    </semantic_list>
+  </semantic_unit_contracts>
+
+  <taxonomy_registry>
+    <base_roles closed="true">
+      <role id="CLAIM"/>
+      <role id="DEFINITION"/>
+      <role id="REQUIREMENT"/>
+      <role id="CONSTRAINT"/>
+      <role id="MECHANISM"/>
+      <role id="ALGORITHM"/>
+      <role id="FORMULA"/>
+      <role id="PARAMETER"/>
+      <role id="EVIDENCE"/>
+      <role id="PROOF"/>
+      <role id="EXAMPLE"/>
+      <role id="WARNING"/>
+      <role id="LIMITATION"/>
+      <role id="OUTCOME"/>
+      <role id="IMPLEMENTATION_DIRECTIVE"/>
+      <role id="OPEN_QUESTION"/>
+      <role id="AMBIGUITY"/>
+      <role id="OBSERVATION"/>
+    </base_roles>
+    <role_aliases extensible="true">
+      <alias specialized_role="PROBLEM" base_role="CLAIM"/>
+      <alias specialized_role="SOLUTION" base_role="MECHANISM"/>
+      <alias specialized_role="CONSEQUENCE" base_role="OUTCOME"/>
+      <alias specialized_role="ENUMERATION" base_role="OBSERVATION"/>
+      <alias specialized_role="FALSIFICATION" base_role="PROOF"/>
+      <alias specialized_role="TRANSITION_STATEMENT" base_role="OBSERVATION"/>
+      <alias specialized_role="SCOPE" base_role="CONSTRAINT"/>
+      <alias specialized_role="CONTEXT" base_role="OBSERVATION"/>
+      <alias specialized_role="KEY_INNOVATION" base_role="CLAIM"/>
+      <alias specialized_role="APPLICATION" base_role="EXAMPLE"/>
+      <alias specialized_role="EMPIRICAL_RESULT" base_role="EVIDENCE"/>
+      <alias specialized_role="DETECTION" base_role="ALGORITHM"/>
+      <alias specialized_role="TRIGGER" base_role="MECHANISM"/>
+      <alias specialized_role="RESPONSE" base_role="OUTCOME"/>
+      <alias specialized_role="GUARANTEE" base_role="CONSTRAINT"/>
+    </role_aliases>
+    <base_relations closed="true">
+      <relation id="DEPENDS_ON"/>
+      <relation id="DEFINES"/>
+      <relation id="IMPLEMENTS"/>
+      <relation id="CONSTRAINS"/>
+      <relation id="CAUSES"/>
+      <relation id="EVIDENCES"/>
+      <relation id="CONTRADICTS"/>
+      <relation id="SEQUENCES"/>
+      <relation id="CONTAINS"/>
+      <relation id="INFERRED_RELATED_TO"/>
+    </base_relations>
+    <relation_aliases extensible="true">
+      <alias relation_subtype="MOTIVATES" base_relation="CAUSES"/>
+      <alias relation_subtype="REFINES" base_relation="DEFINES"/>
+      <alias relation_subtype="GENERALIZES" base_relation="DEFINES"/>
+      <alias relation_subtype="SPECIALIZES" base_relation="DEFINES"/>
+      <alias relation_subtype="MAPS_TO" base_relation="DEFINES"/>
+      <alias relation_subtype="RESOLVES" base_relation="DEPENDS_ON"/>
+      <alias relation_subtype="MANDATES" base_relation="CONSTRAINS"/>
+      <alias relation_subtype="INSTANTIATES" base_relation="IMPLEMENTS"/>
+      <alias relation_subtype="PROVES_VIA" base_relation="EVIDENCES"/>
+      <alias relation_subtype="ATTRIBUTES" base_relation="CAUSES"/>
+      <alias relation_subtype="ENABLES" base_relation="CAUSES"/>
+      <alias relation_subtype="GROUNDS_IN" base_relation="DEPENDS_ON"/>
+      <alias relation_subtype="FUSES_INTO" base_relation="IMPLEMENTS"/>
+      <alias relation_subtype="AUGMENTED_BY" base_relation="DEFINES"/>
+      <alias relation_subtype="FEEDS" base_relation="SEQUENCES"/>
+      <alias relation_subtype="ESCALATES_TO" base_relation="SEQUENCES"/>
+    </relation_aliases>
+    <node_types closed="true">
+      <type id="SECTION_NODE" target_kind="section"/>
+      <type id="UNIT_NODE" target_kind="semantic_unit"/>
+      <type id="CONCEPT_NODE" target_kind="concept"/>
+      <type id="FORMULA_NODE" target_kind="formula"/>
+      <type id="DEFINITION_NODE" target_kind="formal_definition"/>
+      <type id="TABLE_ROW_NODE" target_kind="row"/>
+      <type id="LIST_ITEM_NODE" target_kind="item"/>
+      <type id="OPEN_QUESTION_NODE" target_kind="ambiguity"/>
+    </node_types>
+  </taxonomy_registry>
+
+  <concept_registry_contract>
+    <required_element name="concept_registry"/>
+    <concept required="when_referenced">
+      <required_attribute name="id"/>
+      <required_attribute name="canonical_key"/>
+      <required_attribute name="domain"/>
+      <required_child name="preferred_label"/>
+      <optional_child name="acronym"/>
+      <optional_child name="alias"/>
+      <optional_child name="definition_ref"/>
+      <optional_child name="source_ref"/>
+      <optional_child name="status" values="source_defined compiler_inferred externally_verified unresolved"/>
+    </concept>
+    <collision>
+      <required_attribute name="id"/>
+      <required_attribute name="surface_form"/>
+      <required_attribute name="resolution_policy" values="domain_scoped alias_merge user_required unresolved"/>
+    </collision>
+    <rule id="CR-01">Every concept_ref must resolve to concept_registry/concept/@id.</rule>
+    <rule id="CR-02">Every uppercase acronym of length 2 through 8 must be registered or explicitly exempted.</rule>
+    <rule id="CR-03">The same acronym may map to multiple concepts only when a collision group declares a resolution_policy.</rule>
+  </concept_registry_contract>
+
+  <cognitive_map_contract>
+    <node>
+      <required_attribute name="id"/>
+      <required_attribute name="ref"/>
+      <required_attribute name="weight"/>
+      <required_attribute name="node_type"/>
+      <required_attribute name="label"/>
+      <optional_attribute name="node_granularity" values="section unit formula table_row list_item concept ambiguity"/>
+      <optional_attribute name="inferred" values="true false"/>
+      <optional_attribute name="confidence" values="LOW MEDIUM HIGH"/>
+    </node>
+    <edge>
+      <required_attribute name="id"/>
+      <required_attribute name="source"/>
+      <required_attribute name="target"/>
+      <required_attribute name="base_relation"/>
+      <optional_attribute name="relation_subtype"/>
+      <optional_attribute name="confidence" values="LOW MEDIUM HIGH"/>
+      <optional_attribute name="evidence_ref"/>
+      <optional_attribute name="inferred" values="true false"/>
+    </edge>
+    <rule id="CM-01">Node refs may target sections, semantic_units, formulas, formal_definitions, semantic_table rows, semantic_list items, concepts, or ambiguities.</rule>
+    <rule id="CM-02">Every inferred edge must include inferred="true", confidence, and preferably evidence_ref.</rule>
+  </cognitive_map_contract>
+
+  <ambiguity_policy>
+    <ambiguity_types extensible="true">
+      <type id="UNDEFINED_ACRONYM"/>
+      <type id="ACRONYM_COLLISION"/>
+      <type id="CONCEPT_COLLISION"/>
+      <type id="METAPHOR_LITERALITY"/>
+      <type id="INFERRED_HIERARCHY"/>
+      <type id="SCHEMA_MAPPING_UNCERTAINTY"/>
+      <type id="ROLE_OVERFLOW"/>
+      <type id="RELATION_OVERFLOW"/>
+      <type id="UNSUPPORTED_CLAIM"/>
+      <type id="MISSING_SOURCE_CONTEXT"/>
+      <type id="PRESERVATION_LOSS"/>
+    </ambiguity_types>
+    <required_attributes>
+      <attribute name="id"/>
+      <attribute name="target_ref"/>
+      <attribute name="type"/>
+      <attribute name="resolution_status" values="OPEN PARTIALLY_RESOLVED RESOLVED NEEDS_EVIDENCE USER_REQUIRED"/>
+    </required_attributes>
+  </ambiguity_policy>
+
+  <migration_profiles>
+    <migration_profile id="legacy_document_content_body_agent_ingestion_map" from_version="pre_uas_1" to_version="2.0">
+      <source_signature>
+        <root_element>document</root_element>
+        <required_descendant>content_body</required_descendant>
+        <optional_descendant>agent_ingestion_map</optional_descendant>
+      </source_signature>
+      <map_element from="document" to="UAS_Document"/>
+      <map_element from="content_body" to="semantic_body"/>
+      <map_element from="agent_ingestion_map" to="cognitive_map"/>
+      <map_attribute element="node" from="target_id" to="ref"/>
+      <map_attribute element="node" from="topic" to="label"/>
+      <map_attribute element="node" from="processing_priority" to="weight" transform="priority_to_weight"/>
+      <priority_to_weight>
+        <map from="low" to="0.30"/>
+        <map from="medium" to="0.60"/>
+        <map from="high" to="0.85"/>
+        <map from="critical" to="0.95"/>
+      </priority_to_weight>
+      <report_required>true</report_required>
+    </migration_profile>
+  </migration_profiles>
+
+  <weighting_model>
+    <formula>w = clamp(0.50 + sum(content_modifiers) + 0.05 * normalized_graph_centrality, 0.00, 1.00)</formula>
+    <bands>
+      <band name="critical" min="0.90" max="1.00"/>
+      <band name="high" min="0.75" max="0.89"/>
+      <band name="medium" min="0.50" max="0.74"/>
+      <band name="low" min="0.00" max="0.49"/>
+    </bands>
+    <promotion_rules>
+      <rule id="PM-01" weight_min="0.85" target="must_appear_as_node_or_be_reachable_from_promoted_node"/>
+      <rule id="PM-02" weight_min="0.95" target="must_have_edge_or_ambiguity_explaining_isolation"/>
+    </promotion_rules>
+  </weighting_model>
+
+  <validation_engine>
+    <status_values>pass warning fail skipped not_applicable</status_values>
+    <severity_values>info warning error fatal</severity_values>
+    <validation_check id="VAL-XML-WELL-FORMED" severity="fatal">
+      <assert engine="builtin">xml_well_formed()</assert>
+      <repair_policy>Reject malformed XML before semantic validation.</repair_policy>
+    </validation_check>
+    <validation_check id="VAL-ROOT-CONTRACT" severity="error">
+      <assert engine="schema">Root is UAS_Document and required children appear in contract order.</assert>
+    </validation_check>
+    <validation_check id="VAL-ID-UNIQUENESS" severity="error">
+      <assert engine="xpath2">count(//*[@id]) = count(distinct-values(//*[@id]/string()))</assert>
+    </validation_check>
+    <validation_check id="VAL-REFERENCE-INTEGRITY" severity="error">
+      <assert engine="xpath2">Every cognitive_map node ref and edge endpoint resolves to an existing id.</assert>
+    </validation_check>
+    <validation_check id="VAL-ROLE-ENUM" severity="error">
+      <assert engine="schema">Every semantic_unit base_role is in taxonomy_registry/base_roles.</assert>
+      <repair_policy>Map unsupported source role through role_aliases into base_role plus specialized_role.</repair_policy>
+    </validation_check>
+    <validation_check id="VAL-RELATION-ENUM" severity="error">
+      <assert engine="schema">Every edge base_relation is in taxonomy_registry/base_relations.</assert>
+      <repair_policy>Map unsupported source relation through relation_aliases into base_relation plus relation_subtype.</repair_policy>
+    </validation_check>
+    <validation_check id="VAL-CONCEPT-REGISTRY-COVERAGE" severity="error">
+      <assert engine="schema">Every concept_ref resolves and every repeated concept or acronym is registered.</assert>
+    </validation_check>
+    <validation_check id="VAL-ACRONYM-COLLISION" severity="warning">
+      <assert engine="semantic">Acronym collisions are represented by concept_registry/collision or ambiguity_register entries.</assert>
+    </validation_check>
+    <validation_check id="VAL-PRESERVATION-AUDIT" severity="error">
+      <assert engine="schema">Any non-VERBATIM_FULL preservation_mode includes preservation_audit.</assert>
+    </validation_check>
+    <validation_check id="VAL-MIGRATION-REPORT" severity="error">
+      <assert engine="schema">Any migrated legacy artifact includes migration_report.</assert>
+    </validation_check>
+    <validation_report_contract>
+      <required_attribute name="engine_version"/>
+      <required_attribute name="result" values="pass warning fail"/>
+      <check_required_attributes>id severity status evaluated_count failed_count failed_refs</check_required_attributes>
+    </validation_report_contract>
+  </validation_engine>
+
+  <minimal_output_template>
+    <line>&lt;UAS_Document schema_version="2.0" compiled_by="semantic-architect" preservation_mode="SEMANTIC_COMPRESSED"&gt;</line>
+    <line>&lt;document_metadata&gt;...&lt;/document_metadata&gt;</line>
+    <line>&lt;source_inventory&gt;...&lt;/source_inventory&gt;</line>
+    <line>&lt;concept_registry&gt;...&lt;/concept_registry&gt;</line>
+    <line>&lt;cognitive_map&gt;...&lt;/cognitive_map&gt;</line>
+    <line>&lt;semantic_body&gt;...&lt;/semantic_body&gt;</line>
+    <line>&lt;ambiguity_register&gt;...&lt;/ambiguity_register&gt;</line>
+    <line>&lt;preservation_audit&gt;...&lt;/preservation_audit&gt;</line>
+    <line>&lt;validation_report engine_version="2.0" result="warning"&gt;...&lt;/validation_report&gt;</line>
+    <line>&lt;/UAS_Document&gt;</line>
+  </minimal_output_template>
+</uas_schema_engine>

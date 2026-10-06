@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roo_skill id="uas_semantic_compiler" version="4.0" xmlns:roo="http://schema.roo.dev/skill">
+  <skill_metadata>
+    <name>UAS Semantic Compiler</name>
+    <short_name>Universal Agentic Semantics Compiler</short_name>
+    <description>Routes high-entropy, unstructured, semi-structured, or legacy semantic material into the Universal Agentic Semantics compilation workflow.</description>
+    <purpose>Transform source material into intuitive, machine-readable UAS XML that preserves source order, concept identity, semantic nuance, formulas, ambiguity, provenance, cognitive-map topology, and validation evidence.</purpose>
+    <schema_family>Universal Agentic Semantics</schema_family>
+    <target_mode id="semantic_architect" file="UAS_MODE.xml"/>
+    <schema_engine id="uas_schema_engine" file="UAS_SCHEMA_ENGINE.xml"/>
+  </skill_metadata>
+
+  <when_to_use>
+    <trigger id="TRG-01">A user provides massive unstructured or semi-structured text.</trigger>
+    <trigger id="TRG-02">The source contains dense theory, architecture, mathematics, code, policy, transcripts, tables, formulas, lists, citations, or mixed-format research.</trigger>
+    <trigger id="TRG-03">The user needs a reusable semantic substrate for RAG, knowledge graphs, agent memory, schema compilation, or agent handoff.</trigger>
+    <trigger id="TRG-04">A summary would lose hierarchy, provenance, argument flow, role nuance, formulas, or cross-section relationships.</trigger>
+    <trigger id="TRG-05">The source contains acronyms, aliases, metaphorical terms, or recurring concepts that require namespace control.</trigger>
+    <trigger id="TRG-06">The source contains legacy UAS-like XML such as &lt;document&gt;, &lt;content_body&gt;, or &lt;agent_ingestion_map&gt; and must be migrated without losing metadata.</trigger>
+    <trigger id="TRG-07">The user asks to validate, upgrade, normalize, stress test, or finalize UAS artifacts.</trigger>
+  </when_to_use>
+
+  <do_not_use_when>
+    <condition id="DNU-01">The user asks only for a brief natural-language answer and does not need persistent semantic mapping.</condition>
+    <condition id="DNU-02">The input is already valid UAS XML and the user asks only for direct topical analysis, not validation, migration, schema upgrade, graph enrichment, registry generation, or ambiguity audit.</condition>
+    <condition id="DNU-03">The transformation requires external fact enrichment and the user has not requested research; preserve claims as source-stated and mark evidence status as UNVERIFIED instead.</condition>
+  </do_not_use_when>
+
+  <core_principles>
+    <principle id="PRN-01" name="Preserve Before Compressing">Segment and preserve meaning before summarizing. Compression must produce a preservation audit.</principle>
+    <principle id="PRN-02" name="Evidence-Bound Structure">Infer hierarchy and relationships only when supported by source evidence; mark inferred structure with confidence and evidence references.</principle>
+    <principle id="PRN-03" name="Strict Core, Expressive Perimeter">Assign closed base roles and base relations for interoperability, while preserving source nuance through specialized roles and relation subtypes.</principle>
+    <principle id="PRN-04" name="Graph Over Glossary">Create cognitive-map edges across sections, semantic units, formulas, tables, list items, and concepts, not only headings.</principle>
+    <principle id="PRN-05" name="Registry Before Graph">Build the concept and acronym registry before the cognitive map so graph nodes resolve to stable concept identities.</principle>
+    <principle id="PRN-06" name="Executable Validation">A validation pass is not a prose claim. Every check must include status, severity, evaluated_count, failed_count, and failed_refs.</principle>
+  </core_principles>
+
+  <execution_workflow>
+    <step id="STEP-01" action="inspect_source">
+      <instruction>Identify source type, headings, numbering, tables, formulas, citations, code, lists, transcript turns, acronyms, repeated concepts, and legacy XML signatures.</instruction>
+      <output>source_inventory</output>
+    </step>
+    <step id="STEP-02" action="detect_legacy_profile">
+      <logic>If legacy root or containers are detected, route through UAS_SCHEMA_ENGINE/migration_profiles before semantic compilation.</logic>
+    </step>
+    <step id="STEP-03" action="estimate_semantic_entropy">
+      <metric name="raw_text_ratio" range="0.00..1.00"/>
+      <metric name="technical_density" enum="LOW MEDIUM HIGH EXTREME"/>
+      <metric name="relationship_density" enum="LOW MEDIUM HIGH"/>
+      <metric name="formula_density" enum="NONE LOW MEDIUM HIGH"/>
+      <metric name="acronym_collision_risk" enum="LOW MEDIUM HIGH"/>
+      <metric name="role_drift_risk" enum="LOW MEDIUM HIGH"/>
+      <metric name="legacy_schema_risk" enum="NONE DETECTED"/>
+    </step>
+    <step id="STEP-04" action="select_preservation_mode_and_depth">
+      <depth id="quick">Section and paragraph mapping with concept registry.</depth>
+      <depth id="standard">Section, semantic-unit, formula, table/list, registry, cognitive-map, ambiguity, and validation mapping.</depth>
+      <depth id="deep">Full semantic-unit segmentation, fine-grained graph promotion, migration report, preservation audit, ambiguity audit, and executable validation.</depth>
+      <default_depth>standard</default_depth>
+    </step>
+    <step id="STEP-05" action="segment_semantic_units">
+      <instruction>Segment source into addressable semantic_unit records, not just sentences. Preserve surface_form and source_order.</instruction>
+    </step>
+    <step id="STEP-06" action="classify_roles_and_relations">
+      <instruction>Assign base_role and optional specialized_role to each unit; assign base_relation and optional relation_subtype to each edge.</instruction>
+      <constraint>Unsupported source roles or relations must be resolved through aliases or recorded as ROLE_OVERFLOW or RELATION_OVERFLOW.</constraint>
+    </step>
+    <step id="STEP-07" action="build_concept_registry">
+      <instruction>Register recurring concepts, acronyms, symbols, aliases, domains, expansions, and collision groups before graph construction.</instruction>
+    </step>
+    <step id="STEP-08" action="construct_cognitive_map">
+      <instruction>Promote high-weight semantic units and concepts into the graph according to UAS_SCHEMA_ENGINE/promotion_rules.</instruction>
+    </step>
+    <step id="STEP-09" action="compile_uas_document">
+      <instruction>Emit XML rooted at UAS_Document using the required child order defined by the schema engine.</instruction>
+    </step>
+    <step id="STEP-10" action="run_schema_engine_validation">
+      <instruction>Run executable validation predicates and repair deterministic failures before final emission.</instruction>
+    </step>
+    <step id="STEP-11" action="emit_audits">
+      <instruction>Emit preservation_audit when preservation is not VERBATIM_FULL and migration_report when a legacy profile was used.</instruction>
+    </step>
+  </execution_workflow>
+
+  <weighting_engine>
+    <canonical_formula_ref>UAS_SCHEMA_ENGINE.xml/weighting_model</canonical_formula_ref>
+    <base_weight value="0.50"/>
+    <modifier id="W-01" condition="Core thesis, ontology, or system architecture" delta="+0.30"/>
+    <modifier id="W-02" condition="Implementation rule, schema constraint, formal definition, or executable process" delta="+0.25"/>
+    <modifier id="W-03" condition="Causal, dependency, proof, or validation relationship" delta="+0.20"/>
+    <modifier id="W-04" condition="Formula, metric, parameter, algorithm, or protocol" delta="+0.15"/>
+    <modifier id="W-05" condition="Acronym or concept collision affecting downstream interpretation" delta="+0.15"/>
+    <modifier id="W-06" condition="Controls validation, migration, or schema behavior" delta="+0.10"/>
+    <modifier id="W-07" condition="Example, analogy, or contextual framing" delta="+0.05"/>
+    <modifier id="W-08" condition="Repeated background, rhetorical bridge, or low-actionability narrative" delta="-0.15"/>
+    <modifier id="W-09" condition="Low-confidence inferred structure unless needed for navigation" delta="-0.10"/>
+    <centrality_term coefficient="0.05" basis="normalized_graph_centrality"/>
+    <constraint min="0.00" max="1.00" precision="2"/>
+    <promotion_rule id="PROMO-01">Any semantic unit, formal_definition, table row, list item, or concept with cognitive_weight greater than or equal to 0.85 must be represented directly in the cognitive_map or be reachable through a containing promoted node.</promotion_rule>
+  </weighting_engine>
+
+  <output_contract>
+    <primary_artifact>UAS XML document</primary_artifact>
+    <required_components>
+      <component>document_metadata</component>
+      <component>source_inventory</component>
+      <component>concept_registry</component>
+      <component>cognitive_map</component>
+      <component>semantic_body</component>
+      <component>ambiguity_register</component>
+      <component condition="preservation_mode != VERBATIM_FULL">preservation_audit</component>
+      <component condition="legacy_migration_used = true">migration_report</component>
+      <component>validation_report</component>
+    </required_components>
+    <forbidden_behavior>
+      <item>Do not silently coerce unsupported roles into OBSERVATION.</item>
+      <item>Do not silently coerce unsupported relations into INFERRED_RELATED_TO.</item>
+      <item>Do not emit validation_report status="pass" without evidence counts and failed_refs.</item>
+      <item>Do not use an acronym without registering it or explicitly exempting it.</item>
+      <item>Do not discard formulas, table rows, list items, citations, or code fragments when they carry semantic weight.</item>
+      <item>Do not invent external verification; mark external claims UNVERIFIED unless research was explicitly requested.</item>
+    </forbidden_behavior>
+  </output_contract>
+</roo_skill>

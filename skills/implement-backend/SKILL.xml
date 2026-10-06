@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<skill name="implement-backend" mode="implementer-backend">
+
+  <meta>
+    <description>
+      Implement scoped backend changes: API routes, service logic, DB queries,
+      auth middleware, migrations. Reads docs/current_task.xml for exact scope.
+    </description>
+    <trigger_phrases>
+      implement backend, write the API, update the service, fix the query,
+      add the endpoint, write the migration, implement auth, build the service
+    </trigger_phrases>
+  </meta>
+
+  <steps>
+
+    <step n="1" name="read_state">
+      Read docs/Purpose.xml, docs/context.xml, docs/current_task.xml.
+      First reply must restate:
+        - Task goal (one sentence)
+        - Files you will modify (exact paths from docs/current_task.xml files_in_scope)
+        - Acceptance criteria you are targeting
+      If any required fact is absent from docs/context.xml — output BLOCKED, stop.
+    </step>
+
+    <step n="2" name="plan">
+      Output implementation plan before writing any code:
+        - Numbered steps
+        - Which existing functions/types you extend vs create
+        - How each error path is handled
+        - Tests you will add
+      If plan requires scope change — stop, await engineer confirmation.
+    </step>
+
+    <step n="3" name="implement">
+      <constraints>
+        <item>Modify only files in docs/current_task.xml files_in_scope.</item>
+        <item>No invented endpoints, env vars, DB columns, or type shapes.</item>
+        <item>No `any` without inline justification comment on the same line.</item>
+        <item>Validate all user input server-side before DB writes.</item>
+        <item>Parameterized queries only — no SQL string interpolation.</item>
+        <item>Every error path returns a typed response. No silent swallows.</item>
+        <item>No hardcoded secrets or credentials.</item>
+        <item>No console.log in production paths.</item>
+        <item>No mock/stub code unless labeled: // MOCK — remove before merge</item>
+        <item>No new dependencies without Orchestrator approval.</item>
+      </constraints>
+    </step>
+
+    <step n="4" name="test">
+      Write or update tests:
+        - Happy path for changed logic
+        - At least one error/edge case per changed function
+      Run: npm run test -- --testPathPattern=[changed-file]
+      Report actual test output — do not summarize as "tests pass".
+    </step>
+
+    <step n="5" name="close_turn">
+      End reply with:
+        files_changed: [list]
+        tests_run: [command + actual output]
+        remaining_unknowns: [list or "none"]
+        docs_drift: [stale docs/context.xml fields or "none"]
+    </step>
+
+  </steps>
+
+  <stop_and_ask>
+    <condition>Required fact not in docs/context.xml.</condition>
+    <condition>Task requires files outside docs/current_task.xml files_in_scope.</condition>
+    <condition>Schema or API contract change needed.</condition>
+    <condition>New dependency required.</condition>
+  </stop_and_ask>
+
+  <escalation>
+    <path trigger="stop_and_ask" mode="orchestrator">
+      Switch to orchestrator. Surface the exact missing fact or blocker.
+    </path>
+    <path trigger="schema_change_needed" mode="orchestrator">
+      Escalate before writing any code. Orchestrator updates docs/ first.
+    </path>
+    <path trigger="implementation_done" mode="reviewer">
+      Switch to reviewer. Pass the diff and docs/current_task.xml acceptance criteria.
+    </path>
+  </escalation>
+
+</skill>
